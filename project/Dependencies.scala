@@ -4,7 +4,7 @@ import sbt._
 object Dependencies {
 
   private val catsEffect = "org.typelevel"       %% "cats-effect" % "3.1.1"
-  private val weaverCats = "com.disneystreaming" %% "weaver-cats" % "0.7.3"
+  private val weaverCats = "com.disneystreaming" %% "weaver-cats" % "0.7.4"
 
 
   private val breeze = ("org.scalanlp" %% "breeze" % "1.2")

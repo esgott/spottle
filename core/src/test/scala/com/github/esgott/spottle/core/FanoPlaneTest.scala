@@ -5,7 +5,7 @@ import breeze.linalg.DenseMatrix
 import weaver._
 
 
-object FanoPlaneTest extends SimpleIOSuite {
+object FanoPlaneTest extends SimpleIOSuite:
 
   pureTest("incident matrix order=2") {
     val result = FanoPlane(2)
@@ -24,5 +24,3 @@ object FanoPlaneTest extends SimpleIOSuite {
       result == expected
     )
   }
-
-}

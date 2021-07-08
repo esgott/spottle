@@ -6,7 +6,7 @@ import cats.syntax.all._
 import weaver._
 
 
-object GameTest extends SimpleIOSuite {
+object GameTest extends SimpleIOSuite:
 
   val symbols            = (1 to 7).map(_.toString).map(Symbol.apply).toSet
   val playerA            = Player("A")
@@ -88,5 +88,3 @@ object GameTest extends SimpleIOSuite {
   pureTest("error for player not in turn guess") {
     expect(initialGame.guess(playerB, symbols.head) == GameError.NotPlayersTurn.asLeft)
   }
-
-}

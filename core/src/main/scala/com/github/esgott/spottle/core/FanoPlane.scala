@@ -6,12 +6,12 @@ import breeze.linalg.{sum, DenseMatrix, DenseVector}
 import scala.math.abs
 
 
-object FanoPlane {
+object FanoPlane:
 
   /** Generate an incidence matrix of a Fano Plane with the algorithm described in 1.2 of
     * https://arxiv.org/pdf/1603.05333.pdf
     */
-  def apply(order: Int): DenseMatrix[Short] = {
+  def apply(order: Int): DenseMatrix[Short] =
     val m = DenseMatrix.zeros[Short](size(order), size(order))
 
     for
@@ -24,7 +24,6 @@ object FanoPlane {
     yield ()
 
     m
-  }
 
 
   def size(order: Int): Int =
@@ -63,9 +62,6 @@ object FanoPlane {
     }
 
 
-  extension [T](m: DenseMatrix[T]) {
+  extension [T](m: DenseMatrix[T])
     def row(r: Int): DenseVector[T] = m(::, r)
     def col(c: Int): DenseVector[T] = m(c, ::).t
-  }
-
-}

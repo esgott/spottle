@@ -6,7 +6,7 @@ import cats.syntax.either._
 import weaver._
 
 
-object GeneratorTest extends SimpleIOSuite {
+object GeneratorTest extends SimpleIOSuite:
 
   pureTest("incorrect number of symbols") {
     expect(
@@ -36,5 +36,3 @@ object GeneratorTest extends SimpleIOSuite {
       }
     }
   }
-
-}

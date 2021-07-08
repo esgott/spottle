@@ -11,7 +11,7 @@ case class Game(
     cards: NonEmptyList[Card],
     playerCards: NonEmptyMap[Player, List[Card]],
     nextPlayer: Player
-) {
+):
 
   val players: NonEmptyList[Player] = playerCards.keys.toNonEmptyList
 
@@ -63,23 +63,20 @@ case class Game(
   def winner: Option[Player] =
     playerCards.filter(_.isEmpty).keys.headOption
 
-}
-
 
 type Card = Set[Symbol]
 
 opaque type Symbol = String
 
 
-object Symbol {
+object Symbol:
   def apply(s: String): Symbol = s
-}
 
 
 opaque type Player = String
 
 
-object Player {
+object Player:
 
   def apply(s: String): Player = s
 
@@ -87,8 +84,6 @@ object Player {
   given Order[Player] = Order.from[Player] { (a, b) =>
     if (a eq b) 0 else a.compareTo(b)
   }
-
-}
 
 
 enum GameError:
