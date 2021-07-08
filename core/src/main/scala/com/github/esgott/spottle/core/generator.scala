@@ -1,20 +1,27 @@
 package com.github.esgott.spottle.core
 
 
-import cats.syntax.either._
+import cats.data.NonEmptyList
+import cats.syntax.all._
 import com.github.esgott.spottle.core.FanoPlane._
+
+import scala.util.Random
 
 
 enum GenerationError:
   case SymbolSizeNotPrime
   case SymbolSizeIncorrectForOrder(order: Int, sizeShouldBe: Int)
+  case EmptyCards
+
+
+type GenerationResult[T] = Either[GenerationError, T]
 
 
 def generateGame(
     order: Int,
     symbols: Set[Symbol],
-    players: List[Player]
-): Either[GenerationError, Game] =
+    players: NonEmptyList[Player]
+): GenerationResult[Game] =
   for
     _ <- isPrime(symbols.size)
     _ <- checkSymbolsCount(order, symbols)
@@ -45,7 +52,7 @@ private def checkSymbolsCount(order: Int, symbols: Set[Symbol]) =
   )
 
 
-private def generateUnsafe(order: Int, symbols: Set[Symbol], players: List[Player]): Game =
+private def generateUnsafe(order: Int, symbols: Set[Symbol], players: NonEmptyList[Player]): Game =
   val fanoPlane = FanoPlane(order)
 
   val cards = for
@@ -59,10 +66,19 @@ private def generateUnsafe(order: Int, symbols: Set[Symbol], players: List[Playe
       .toSet
   yield selectedSymbols: Card
 
+  val shuffledCards = Random.shuffle(cards)
+  val cardsToDeal     = shuffledCards.tail
+  val nrOfCardsToDeal = cardsToDeal.size / players.size
+
+  val playerCards = players.zipWithIndex.map { case (player, index) =>
+    val playerCards = cardsToDeal.drop(nrOfCardsToDeal * index).take(nrOfCardsToDeal)
+    player -> playerCards.toList
+  }.toNem
+
+  val cardsNotDealt = cardsToDeal.drop(players.size * nrOfCardsToDeal).toList
+
   Game(
-    version = 0,
-    cards = cards.toList,
-    players = players,
-    playerCards = players.map(_ -> List.empty).toMap,
-    players.head
+    cards = NonEmptyList.ofInitLast(cardsNotDealt, shuffledCards.head),
+    playerCards = playerCards,
+    nextPlayer = playerCards.keys.toNonEmptyList.head
   )
