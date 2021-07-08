@@ -3,6 +3,7 @@ package com.github.esgott.spottle.core
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
+import com.github.esgott.spottle.api.{Player, Symbol}
 import weaver._
 
 

@@ -5,9 +5,11 @@ import cats.Order
 import cats.data.{NonEmptyList, NonEmptyMap}
 import cats.syntax.all._
 import cats.instances.either._
+import com.github.esgott.spottle.api.{Card, Player, Symbol}
 
 
 case class Game(
+    version: Int,
     cards: NonEmptyList[Card],
     playerCards: NonEmptyMap[Player, List[Card]],
     nextPlayer: Player
@@ -54,6 +56,7 @@ case class Game(
 
       nextPlayer <- playerAfter(player)
     yield Game(
+      version = version + 1,
       cards = playerCardsNel.head :: cards,
       playerCards = playerCards.updateWith(player)(_ => playerCardsNel.tail),
       nextPlayer = nextPlayer
@@ -62,28 +65,6 @@ case class Game(
 
   def winner: Option[Player] =
     playerCards.filter(_.isEmpty).keys.headOption
-
-
-type Card = Set[Symbol]
-
-opaque type Symbol = String
-
-
-object Symbol:
-  def apply(s: String): Symbol = s
-
-
-opaque type Player = String
-
-
-object Player:
-
-  def apply(s: String): Player = s
-
-
-  given Order[Player] = Order.from[Player] { (a, b) =>
-    if (a eq b) 0 else a.compareTo(b)
-  }
 
 
 enum GameError:

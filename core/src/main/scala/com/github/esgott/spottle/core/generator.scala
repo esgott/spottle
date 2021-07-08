@@ -3,6 +3,7 @@ package com.github.esgott.spottle.core
 
 import cats.data.NonEmptyList
 import cats.syntax.all._
+import com.github.esgott.spottle.api.{Card, Player, Symbol}
 import com.github.esgott.spottle.core.FanoPlane._
 
 import scala.util.Random
@@ -85,6 +86,7 @@ private def generateUnsafe(
   val cardsNotDealt = cardsToDeal.drop(players.size * nrOfCardsToDeal).toList
 
   Game(
+    version = 0,
     cards = NonEmptyList.ofInitLast(cardsNotDealt, shuffledCards.head),
     playerCards = playerCards,
     nextPlayer = playerCards.keys.toNonEmptyList.head

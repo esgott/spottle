@@ -3,6 +3,7 @@ package com.github.esgott.spottle.core
 
 import cats.data.NonEmptyList
 import cats.syntax.all._
+import com.github.esgott.spottle.api.{Card, Player, Symbol}
 import weaver._
 
 
@@ -49,6 +50,13 @@ object GameTest extends SimpleIOSuite:
     expect(finalGame.playerCards.lookup(playerA).get.size == 0) and
       expect(finalGame.playerCards.lookup(playerB).get.size == 1) and
       expect(finalGame.winner == playerA.some)
+  }
+
+
+  pureTest("version is increased") {
+    val commonSymbol = initialGame.cards.head intersect topCardForPlayer(initialGame, playerA)
+    val Right(game)  = initialGame.guess(playerA, commonSymbol.head)
+    expect(initialGame.version == 0) and expect(game.version == 1)
   }
 
 
