@@ -12,7 +12,7 @@ object GameTest extends SimpleIOSuite:
   val playerA            = Player("A")
   val playerB            = Player("B")
   val players            = NonEmptyList.of(playerA, playerB)
-  val Right(initialGame) = generateGame(2, symbols, players)
+  val Right(initialGame) = generateGame(2, symbols, players, 1)
 
 
   def topCardForPlayer(game: Game, player: Player): Card =

@@ -8,26 +8,27 @@ import weaver._
 
 object GeneratorTest extends SimpleIOSuite:
 
+  def symbols(nrOfSymbols: Int): Set[Symbol] =
+    (1 to nrOfSymbols).map(_.toString).map(Symbol.apply).toSet
+
   pureTest("incorrect number of symbols") {
     expect(
-      generateGame(2, Set(Symbol("a"), Symbol("b")), NonEmptyList.one(Player("p"))) ==
+      generateGame(2, symbols(2), NonEmptyList.one(Player("p")), 1) ==
         GenerationError.SymbolSizeIncorrectForOrder(2, 7).asLeft
     )
   }
 
 
   pureTest("not prime order") {
-    val symbols = (1 to 21).map(_.toString).map(Symbol.apply).toSet
     expect(
-      generateGame(4, symbols, NonEmptyList.one(Player("p"))) ==
+      generateGame(4, symbols(21), NonEmptyList.one(Player("p")), 1) ==
         GenerationError.SymbolSizeNotPrime.asLeft
     )
   }
 
 
   pureTest("order=2") {
-    val symbols     = (1 to 7).map(_.toString).map(Symbol.apply).toSet
-    val Right(game) = generateGame(2, symbols, NonEmptyList.one(Player("p")))
+    val Right(game) = generateGame(2, symbols(7), NonEmptyList.one(Player("p")), 1)
 
     forEach(game.cards) { card =>
       val restOfTheCards = game.cards.filter(_ != card)
@@ -35,4 +36,11 @@ object GeneratorTest extends SimpleIOSuite:
         expect(card.exists(otherCard.contains))
       }
     }
+  }
+
+  pureTest("games generated with same seeds equals") {
+    val Right(game1) = generateGame(2, symbols(7), NonEmptyList.one(Player("p")), 1)
+    val Right(game2) = generateGame(2, symbols(7), NonEmptyList.one(Player("p")), 1)
+    val Right(game3) = generateGame(2, symbols(7), NonEmptyList.one(Player("p")), 2)
+    expect(game1 == game2) and expect(game2 != game3)
   }

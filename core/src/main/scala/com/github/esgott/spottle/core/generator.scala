@@ -20,12 +20,13 @@ type GenerationResult[T] = Either[GenerationError, T]
 def generateGame(
     order: Int,
     symbols: Set[Symbol],
-    players: NonEmptyList[Player]
+    players: NonEmptyList[Player],
+    seed: Long
 ): GenerationResult[Game] =
   for
     _ <- isPrime(symbols.size)
     _ <- checkSymbolsCount(order, symbols)
-  yield generateUnsafe(order, symbols, players)
+  yield generateUnsafe(order, symbols, players, seed)
 
 
 private def isPrime(n: Int) =
@@ -52,7 +53,12 @@ private def checkSymbolsCount(order: Int, symbols: Set[Symbol]) =
   )
 
 
-private def generateUnsafe(order: Int, symbols: Set[Symbol], players: NonEmptyList[Player]): Game =
+private def generateUnsafe(
+    order: Int,
+    symbols: Set[Symbol],
+    players: NonEmptyList[Player],
+    seed: Long
+): Game =
   val fanoPlane = FanoPlane(order)
 
   val cards = for
@@ -66,7 +72,8 @@ private def generateUnsafe(order: Int, symbols: Set[Symbol], players: NonEmptyLi
       .toSet
   yield selectedSymbols: Card
 
-  val shuffledCards = Random.shuffle(cards)
+  val random          = Random(seed)
+  val shuffledCards   = random.shuffle(cards.toList)
   val cardsToDeal     = shuffledCards.tail
   val nrOfCardsToDeal = cardsToDeal.size / players.size
 
