@@ -12,7 +12,6 @@ import scala.util.Random
 enum GenerationError:
   case SymbolSizeNotPrime
   case SymbolSizeIncorrectForOrder(order: Int, sizeShouldBe: Int)
-  case EmptyCards
 
 
 type GenerationResult[T] = Either[GenerationError, T]

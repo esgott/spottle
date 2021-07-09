@@ -7,7 +7,9 @@ ThisBuild / testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 lazy val spottle = (project in file("."))
   .aggregate(
     `spottle-api`,
-    `spottle-core`
+    `spottle-core`,
+    `spottle-engine`,
+    `spottle-kafka`
   )
 
 
@@ -20,4 +22,18 @@ lazy val `spottle-core` = (project in file("core"))
   .dependsOn(`spottle-api`)
   .settings(
     libraryDependencies ++= Dependencies.core
+  )
+
+lazy val `spottle-engine` = (project in file("engine"))
+  .dependsOn(
+    `spottle-core`,
+    `spottle-kafka`
+  )
+  .settings(
+    libraryDependencies ++= Dependencies.engine
+  )
+
+lazy val `spottle-kafka` = (project in file("kafka"))
+  .settings(
+    libraryDependencies ++= Dependencies.kafka
   )
