@@ -5,9 +5,10 @@ import cats.MonadError
 import cats.effect.kernel.Clock
 import cats.instances.either._
 import cats.syntax.all._
-import com.github.esgott.spottle.api.{Player, PublicGame, SpottleCommand, SpottleEvent, Symbol}
-import com.github.esgott.spottle.api.SpottleCommand._
-import com.github.esgott.spottle.api.SpottleEvent._
+import com.github.esgott.spottle.api.{Player, PublicGame, Symbol}
+import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
+import com.github.esgott.spottle.api.kafka.v1.SpottleCommand._
+import com.github.esgott.spottle.api.kafka.v1.SpottleEvent._
 import com.github.esgott.spottle.core.{generateGame, GenerationError}
 import com.github.esgott.spottle.core.{FanoPlane, Game}
 import com.github.esgott.spottle.engine.CommandHandler.symbols
@@ -30,6 +31,7 @@ class CommandHandler[F[_]](store: GameStore[F])(using MonadError[F, Throwable]):
     val symbolsForGame = symbols.take(symbolSize).toSet
     val game           = generateGame(order, symbolsForGame, players, gameId)
     val metadata       = GameMetadata(creator)
+
     for _ <- game.traverse(g => store.store(gameId, g, metadata))
     yield game match
       case Right(g) =>

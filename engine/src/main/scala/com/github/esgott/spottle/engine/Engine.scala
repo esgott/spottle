@@ -2,7 +2,7 @@ package com.github.esgott.spottle.engine
 
 
 import cats.effect.{ExitCode, IO, IOApp}
-import com.github.esgott.spottle.api.{SpottleCommand, SpottleEvent}
+import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
 import com.github.esgott.spottle.kafka.KafkaConsumerConfig.KafkaConsumerRecord
 import com.github.esgott.spottle.kafka.{KafkaConfig, KafkaConsumerConfig, KafkaProducerConfig}
 import com.github.esgott.spottle.kafka.KafkaProducerConfig.{KafkaProducerRecord, Result}

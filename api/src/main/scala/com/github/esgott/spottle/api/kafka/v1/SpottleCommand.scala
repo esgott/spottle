@@ -1,14 +1,14 @@
-package com.github.esgott.spottle.api
-
+package com.github.esgott.spottle.api.kafka.v1
 
 import cats.data.NonEmptyList
 import cats.syntax.either._
-import io.circe.{Decoder, DecodingFailure}
+import com.github.esgott.spottle.api._
 import io.circe.CursorOp.DownField
 import io.circe.generic.auto._
+import io.circe.{Decoder, DecodingFailure}
 
 
-// TODO migrate to circe-generic-extras when Scala 3 is supported by it
+// TODO migrate to circe-generic-extras when https://github.com/circe/circe-generic-extras/issues/168 is solved
 
 enum SpottleCommand:
   case CreateGame(gameId: Long, order: Int, creator: Player, players: NonEmptyList[Player])

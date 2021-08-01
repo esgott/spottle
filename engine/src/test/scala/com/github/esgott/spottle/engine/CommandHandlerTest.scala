@@ -4,10 +4,11 @@ package com.github.esgott.spottle.engine
 import cats.Monoid
 import cats.data.{NonEmptyList, NonEmptySet, StateT}
 import cats.syntax.all._
-import com.github.esgott.spottle.api.{Player, PublicGame, SpottleEvent, Symbol}
-import com.github.esgott.spottle.api.SpottleCommand._
-import com.github.esgott.spottle.api.SpottleEvent._
-import com.github.esgott.spottle.core.{generateGame, Game}
+import com.github.esgott.spottle.api.{Player, PublicGame, Symbol}
+import com.github.esgott.spottle.api.kafka.v1.SpottleCommand._
+import com.github.esgott.spottle.api.kafka.v1.SpottleEvent
+import com.github.esgott.spottle.api.kafka.v1.SpottleEvent._
+import com.github.esgott.spottle.core.{Game, generateGame}
 import com.github.esgott.spottle.engine.GameStore.{GameEntry, GameMetadata}
 import weaver._
 

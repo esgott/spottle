@@ -17,6 +17,7 @@ object Dependencies {
   private val catsEffect = scalaDep("org.typelevel", "cats-effect", "3.1.1")
   private val circe      = scalaDep("io.circe", "circe", "0.14.0")
   private val fs2        = scalaDep("co.fs2", "fs2", "3.0.6")
+  private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.18.0")
   private val weaver     = scalaDep("com.disneystreaming", "weaver", "0.7.4")
 
   private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka" % "2.1.0"
@@ -29,7 +30,9 @@ object Dependencies {
 
   val api = Seq(
     cats("core"),
-    circe("generic")
+    circe("generic"),
+    tapir("core"),
+    tapir("json-circe")
   )
 
 
