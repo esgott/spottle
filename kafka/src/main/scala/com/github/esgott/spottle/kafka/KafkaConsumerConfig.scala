@@ -1,7 +1,7 @@
 package com.github.esgott.spottle.kafka
 
 
-import cats.effect.IO
+import cats.effect.{IO, Resource}
 import com.github.esgott.spottle.kafka.KafkaConsumerConfig._
 import fs2.Stream
 import fs2.kafka._
@@ -23,11 +23,13 @@ case class KafkaConsumerConfig(
       .withGroupId(groupId)
 
 
-  def stream[K: Decoder, V: Decoder](kafkaConfig: KafkaConfig): Stream[IO, KafkaConsumerRecord[K, V]] =
-    KafkaConsumer
-      .stream(consumerSettings(kafkaConfig))
-      .evalTap(_.subscribeTo(topicName))
-      .flatMap(_.stream)
+  def stream[K: Decoder, V: Decoder](
+      kafkaConfig: KafkaConfig
+  ): Resource[IO, Stream[IO, KafkaConsumerRecord[K, V]]] =
+    for
+      consumer <- KafkaConsumer.resource(consumerSettings(kafkaConfig))
+      _        <- Resource.eval(consumer.subscribeTo(topicName))
+    yield consumer.stream
       .flatMap(deserializeRecord[K, V])
 
 

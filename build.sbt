@@ -3,11 +3,14 @@ ThisBuild / organization := "com.github.esgott"
 
 ThisBuild / testFrameworks += new TestFramework("weaver.framework.CatsEffect")
 
+ThisBuild / evictionErrorLevel := Level.Warn
+
 
 lazy val spottle = (project in file("."))
   .aggregate(
     `spottle-api`,
     `spottle-core`,
+    `spottle-edge`,
     `spottle-engine`,
     `spottle-kafka`
   )
@@ -18,11 +21,23 @@ lazy val `spottle-api` = (project in file("api"))
     libraryDependencies ++= Dependencies.api
   )
 
+
 lazy val `spottle-core` = (project in file("core"))
   .dependsOn(`spottle-api`)
   .settings(
     libraryDependencies ++= Dependencies.core
   )
+
+
+lazy val `spottle-edge` = (project in file("edge"))
+  .dependsOn(
+    `spottle-core`,
+    `spottle-kafka`
+  )
+  .settings(
+    libraryDependencies ++= Dependencies.edge
+  )
+
 
 lazy val `spottle-engine` = (project in file("engine"))
   .dependsOn(
@@ -32,6 +47,7 @@ lazy val `spottle-engine` = (project in file("engine"))
   .settings(
     libraryDependencies ++= Dependencies.engine
   )
+
 
 lazy val `spottle-kafka` = (project in file("kafka"))
   .settings(

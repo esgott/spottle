@@ -1,11 +1,13 @@
 package com.github.esgott.spottle.api.kafka.v1
 
 
+import cats.syntax.either._
 import com.github.esgott.spottle.api._
 import com.github.esgott.spottle.api.circe.typeDescriptor
+import io.circe.CursorOp.DownField
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 
 
 // TODO migrate to circe-generic-extras when https://github.com/circe/circe-generic-extras/issues/168 is solved
@@ -24,4 +26,18 @@ object SpottleEvent:
     case event: Winner        => event.asJson.deepMerge(typeDescriptor("Winner"))
     case event: ClientError   => event.asJson.deepMerge(typeDescriptor("ClientError"))
     case event: InternalError => event.asJson.deepMerge(typeDescriptor("InternalError"))
+  }
+
+
+  given Decoder[SpottleEvent] = { cursor =>
+    for
+      name <- cursor.downField("type").as[String]
+      result <- name match
+        case "GameUpdate"    => cursor.as[GameUpdate]
+        case "Winner"        => cursor.as[Winner]
+        case "ClientError"   => cursor.as[ClientError]
+        case "InternalError" => cursor.as[InternalError]
+        case other =>
+          DecodingFailure(s"Unknown command type '$other'", List(DownField("type"))).asLeft
+    yield result
   }

@@ -6,7 +6,8 @@ import io.circe.generic.semiauto.deriveCodec
 
 
 case class KafkaConfig(
-    bootstrapServer: String
+    bootstrapServer: String,
+    transactionalId: Option[String] = None
 )
 
 

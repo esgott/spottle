@@ -1,11 +1,14 @@
 package com.github.esgott.spottle.api.kafka.v1
 
+
 import cats.data.NonEmptyList
 import cats.syntax.either._
 import com.github.esgott.spottle.api._
+import com.github.esgott.spottle.api.circe.typeDescriptor
 import io.circe.CursorOp.DownField
 import io.circe.generic.auto._
-import io.circe.{Decoder, DecodingFailure}
+import io.circe.syntax._
+import io.circe.{Decoder, DecodingFailure, Encoder}
 
 
 // TODO migrate to circe-generic-extras when https://github.com/circe/circe-generic-extras/issues/168 is solved
@@ -18,6 +21,14 @@ enum SpottleCommand:
 
 
 object SpottleCommand:
+
+  given Encoder[SpottleCommand] = {
+    case command: CreateGame => command.asJson.deepMerge(typeDescriptor("CreateGame"))
+    case command: GetGame    => command.asJson.deepMerge(typeDescriptor("GetGame"))
+    case command: Guess      => command.asJson.deepMerge(typeDescriptor("Guess"))
+    case command: FinishGame => command.asJson.deepMerge(typeDescriptor("FinishGame"))
+  }
+
 
   given Decoder[SpottleCommand] = { cursor =>
     for
