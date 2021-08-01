@@ -14,7 +14,7 @@ object Dependencies {
 
 
   private val cats       = scalaDep("org.typelevel", "cats", "2.6.1")
-  private val catsEffect = scalaDep("org.typelevel", "cats-effect", "3.1.1")
+  private val catsEffect = scalaDep("org.typelevel", "cats-effect", "3.2.1")
   private val circe      = scalaDep("io.circe", "circe", "0.14.0")
   private val fs2        = scalaDep("co.fs2", "fs2", "3.0.6")
   private val http4s     = scalaDep("org.http4s", "http4s", "0.23.0")
