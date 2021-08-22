@@ -14,18 +14,17 @@ object Dependencies {
 
 
   private val cats       = scalaDep("org.typelevel", "cats", "2.6.1")
-  private val catsEffect = scalaDep("org.typelevel", "cats-effect", "3.2.1")
+  private val catsEffect = scalaDep("org.typelevel", "cats-effect", "3.2.3")
   private val circe      = scalaDep("io.circe", "circe", "0.14.0")
-  private val fs2        = scalaDep("co.fs2", "fs2", "3.0.6")
-  private val http4s     = scalaDep("org.http4s", "http4s", "0.23.0")
-  private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.18.1")
+  private val fs2        = scalaDep("co.fs2", "fs2", "3.1.0")
+  private val http4s     = scalaDep("org.http4s", "http4s", "0.23.1")
+  private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.18.3")
   private val weaver     = scalaDep("com.disneystreaming", "weaver", "0.7.4")
 
   private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka" % "2.1.0"
 
 
-  private val breeze = ("org.scalanlp" %% "breeze" % "1.2")
-    .cross(CrossVersion.for3Use2_13)
+  private val breeze = ("org.scalanlp" %% "breeze" % "2.0-RC3")
     .exclude("org.typelevel", "cats-kernel_2.13")
 
 
