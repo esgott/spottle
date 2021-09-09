@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "3.0.0"
+ThisBuild / scalaVersion := "3.0.2"
 ThisBuild / organization := "com.github.esgott"
 
 ThisBuild / testFrameworks += new TestFramework("weaver.framework.CatsEffect")
