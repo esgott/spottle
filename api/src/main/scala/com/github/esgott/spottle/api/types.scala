@@ -10,7 +10,7 @@ import sttp.tapir.SchemaType.SString
 import sttp.tapir.generic.auto._
 
 
-// TODO migrate to circe-generic-extras when Scala 3 when https://github.com/circe/circe-generic-extras/issues/168 is solved
+// TODO migrate to codec derivation when https://github.com/circe/circe/issues/1777 is solved
 
 type Card = Set[Symbol]
 

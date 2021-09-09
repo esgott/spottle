@@ -11,7 +11,7 @@ import io.circe.syntax._
 import io.circe.{Decoder, DecodingFailure, Encoder}
 
 
-// TODO migrate to circe-generic-extras when https://github.com/circe/circe-generic-extras/issues/168 is solved
+// TODO migrate to codec derivation when https://github.com/circe/circe/issues/1777 is solved
 
 enum SpottleCommand:
   case CreateGame(gameId: Long, order: Int, creator: Player, players: NonEmptyList[Player])

@@ -7,13 +7,12 @@ import fs2.Stream
 import fs2.kafka._
 import io.circe.{Codec, Decoder}
 import io.circe.fs2._
-import io.circe.generic.semiauto.deriveCodec
 
 
 case class KafkaConsumerConfig(
     topicName: String,
     groupId: String
-):
+) derives Codec.AsObject:
 
   def consumerSettings(kafkaConfig: KafkaConfig): ConsumerSettings[IO, Array[Byte], Array[Byte]] =
     ConsumerSettings[IO, Array[Byte], Array[Byte]]
@@ -34,7 +33,6 @@ case class KafkaConsumerConfig(
 
 
 object KafkaConsumerConfig:
-  given Codec[KafkaConsumerConfig] = deriveCodec
 
   case class KafkaConsumerRecord[K, V](key: K, value: V, offset: CommittableOffset[IO])
 

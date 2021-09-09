@@ -7,7 +7,6 @@ import com.github.esgott.spottle.kafka.KafkaProducerConfig._
 import fs2.{Pipe, Stream}
 import fs2.kafka._
 import io.circe.{Codec, Encoder}
-import io.circe.generic.semiauto.deriveCodec
 import io.circe.syntax._
 
 import java.nio.charset.StandardCharsets
@@ -16,7 +15,7 @@ import scala.concurrent.duration._
 
 case class KafkaProducerConfig(
     topicName: String
-):
+) derives Codec.AsObject:
 
   def transactionalProducerSettings(
       kafkaConfig: KafkaConfig
@@ -72,7 +71,6 @@ case class KafkaProducerConfig(
 
 
 object KafkaProducerConfig:
-  given Codec[KafkaProducerConfig] = deriveCodec
 
   case class KafkaProducerRecord[K, V](records: List[(K, V)], offset: CommittableOffset[IO])
 
