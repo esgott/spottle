@@ -11,6 +11,7 @@ import org.http4s.server.Router
 import fs2.Stream
 
 import scala.concurrent.ExecutionContext
+import scala.util.Random
 
 
 object Edge extends IOApp:
@@ -43,12 +44,10 @@ object Edge extends IOApp:
 
       for
         kafka <- EdgeKafka.edgeKafka[IO](streamWithoutCommiting, commandProducerPipe)
-
-        given EdgeKafka[IO] = kafka
-
-        http: EdgeHttp[IO] = EdgeHttp.edgeHttp[IO]
-
-        endpoints: EdgeEndpoints[IO] = EdgeEndpoints.edgeEndpoints[IO]
+        given EdgeKafka[IO]       = kafka
+        given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
+        given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
+        endpoints                 = EdgeEndpoints.edgeEndpoints[IO]
 
         server = BlazeServerBuilder[IO](ExecutionContext.global)
           .bindHttp(config.port)
