@@ -30,22 +30,26 @@ lazy val `spottle-core` = (project in file("core"))
 
 
 lazy val `spottle-edge` = (project in file("edge"))
+  .enablePlugins(DockerPlugin, JavaAppPackaging)
   .dependsOn(
     `spottle-core`,
     `spottle-kafka`
   )
   .settings(
-    libraryDependencies ++= Dependencies.edge
+    libraryDependencies ++= Dependencies.edge,
+    dockerExposedPorts := List(8080)
   )
 
 
 lazy val `spottle-engine` = (project in file("engine"))
+  .enablePlugins(DockerPlugin, JavaAppPackaging)
   .dependsOn(
     `spottle-core`,
     `spottle-kafka`
   )
   .settings(
-    libraryDependencies ++= Dependencies.engine
+    libraryDependencies ++= Dependencies.engine,
+    dockerExposedPorts := List(8080)
   )
 
 
