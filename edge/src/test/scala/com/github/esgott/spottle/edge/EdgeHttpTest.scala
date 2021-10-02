@@ -52,14 +52,10 @@ object EdgeHttpTest extends SimpleIOSuite:
       kafka <- InMemoryKafka()
       given EdgeKafka[IO] = kafka
 
-      order      = 2
-      publicGame = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
-      kafkaCreate = SpottleCommand.CreateGame(
-        gameId,
-        order,
-        player,
-        NonEmptyList.of(player, otherPlayer)
-      )
+      order       = 2
+      publicGame  = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
+      players     = NonEmptyList.of(player, otherPlayer)
+      kafkaCreate = SpottleCommand.CreateGame(gameId, order, player, players)
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(0, publicGame, kafkaCreate))
 

@@ -3,11 +3,14 @@ package com.github.esgott.spottle.edge
 
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.effect.std.Queue
+import cats.syntax.all._
 import com.github.esgott.spottle.kafka.{KafkaConfig, KafkaConsumerConfig, KafkaProducerConfig}
 import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
-import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.blaze.server._
 import org.http4s.server.Router
 import fs2.Stream
+
+import scala.concurrent.ExecutionContext
 
 
 object Edge extends IOApp:
@@ -43,17 +46,15 @@ object Edge extends IOApp:
 
         given EdgeKafka[IO] = kafka
 
-        _ = summon[EdgeKafka[IO]]
+        http: EdgeHttp[IO] = EdgeHttp.edgeHttp[IO]
 
-        http  = EdgeHttp.edgeHttp[IO]
+        endpoints: EdgeEndpoints[IO] = EdgeEndpoints.edgeEndpoints[IO]
 
-        endpoints           = EdgeEndpoints.edgeEndpoints[IO]
-
-        server <- BlazeServerBuilder[IO]
+        server = BlazeServerBuilder[IO](ExecutionContext.global)
           .bindHttp(config.port)
           .withHttpApp(Router("/" -> endpoints.routes).orNotFound)
 
-        streams = List(summon[EdgeKafka[IO]].stream, server.stream)
-        _ <- Stream.emits(streams).parJoin(streams.size)
+        streams = List(kafka.stream, server.stream)
+        _ <- Stream.emits(streams).parJoin(streams.size).compile.drain
       yield ExitCode.Success
     }
