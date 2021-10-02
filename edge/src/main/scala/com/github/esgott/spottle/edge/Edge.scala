@@ -44,16 +44,20 @@ object Edge extends IOApp:
 
       for
         kafka <- EdgeKafka.edgeKafka[IO](streamWithoutCommiting, commandProducerPipe)
-        given EdgeKafka[IO]       = kafka
-        given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
-        given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
-        endpoints                 = EdgeEndpoints.edgeEndpoints[IO]
-
-        server = BlazeServerBuilder[IO](ExecutionContext.global)
-          .bindHttp(config.port)
-          .withHttpApp(Router("/" -> endpoints.routes).orNotFound)
-
+        server  = httpEndpoint(kafka)
         streams = List(kafka.stream, server.stream)
         _ <- Stream.emits(streams).parJoin(streams.size).compile.drain
       yield ExitCode.Success
     }
+
+
+  private def httpEndpoint(kafka: EdgeKafka[IO]) = {
+    given EdgeKafka[IO]       = kafka
+    given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
+    given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
+    val endpoints             = EdgeEndpoints.edgeEndpoints[IO]
+
+    BlazeServerBuilder[IO](ExecutionContext.global)
+      .bindHttp(config.port)
+      .withHttpApp(Router("/" -> endpoints.routes).orNotFound)
+  }
