@@ -18,7 +18,7 @@ object Dependencies {
   private val circe      = scalaDep("io.circe", "circe", "0.14.0")
   private val fs2        = scalaDep("co.fs2", "fs2", "3.1.1")
   private val http4s     = scalaDep("org.http4s", "http4s", "0.23.3")
-  private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.18.3")
+  private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.19.0-M8")
   private val weaver     = scalaDep("com.disneystreaming", "weaver", "0.7.4")
 
   private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka" % "2.1.0"

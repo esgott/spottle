@@ -26,6 +26,9 @@ object Symbol:
 
   given Schema[Symbol] = Schema(SString())
 
+  given Codec[String, Symbol, TextPlain] =
+    Codec.string.map(Symbol.apply)(identity).schema(summon[Schema[Player]])
+
 
 opaque type Player = String
 

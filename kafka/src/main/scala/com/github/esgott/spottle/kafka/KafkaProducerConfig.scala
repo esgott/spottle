@@ -39,7 +39,7 @@ case class KafkaProducerConfig(
 
   def transactionalStream[K: Encoder, V: Encoder](
       kafkaConfig: KafkaConfig
-  ): Resource[IO, Pipe[IO, KafkaProducerRecord[K, V], Result[K, V]]] =
+  ): Resource[IO, Pipe[IO, KafkaProducerRecord[K, V], List[KafkaProducerRecord[K, V]]]] =
     for
       producerSettings <- Resource.eval(transactionalProducerSettings(kafkaConfig))
       producer         <- TransactionalKafkaProducer[IO].resource(producerSettings)
@@ -73,8 +73,6 @@ case class KafkaProducerConfig(
 object KafkaProducerConfig:
 
   case class KafkaProducerRecord[K, V](records: List[(K, V)], offset: CommittableOffset[IO])
-
-  type Result[K, V] = List[KafkaProducerRecord[K, V]]
 
 
   def serialize[T: Encoder](value: T): Array[Byte] =

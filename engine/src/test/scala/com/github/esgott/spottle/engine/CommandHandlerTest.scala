@@ -8,7 +8,7 @@ import com.github.esgott.spottle.api.{Player, PublicGame, Symbol}
 import com.github.esgott.spottle.api.kafka.v1.SpottleCommand._
 import com.github.esgott.spottle.api.kafka.v1.SpottleEvent
 import com.github.esgott.spottle.api.kafka.v1.SpottleEvent._
-import com.github.esgott.spottle.core.{Game, generateGame}
+import com.github.esgott.spottle.core.{generateGame, Game}
 import com.github.esgott.spottle.engine.GameStore.{GameEntry, GameMetadata}
 import weaver._
 
@@ -88,9 +88,10 @@ object CommandHandlerTest extends SimpleIOSuite:
   pureTest("get non-existent game") {
     val Right(events) = commandHandler.handle(getGameCommand).runEmptyA
 
-    val ClientError(message, command) :: Nil = events
+    val NotFound(gameId, message, command) :: Nil = events
 
-    expect(message.contains("Unknown game ID 42")) and
+    expect(message.contains("Game not found: 42")) and
+      expect(gameId == getGameCommand.gameId) and
       expect(command == getGameCommand)
   }
 
@@ -115,14 +116,31 @@ object CommandHandlerTest extends SimpleIOSuite:
   pureTest("guess on non-existent game") {
     val Right(events) = commandHandler.guess(guessCommand).runEmptyA
 
-    val ClientError(message, command) :: Nil = events
+    val NotFound(gameId, message, command) :: Nil = events
 
-    expect(message.contains("Unknown game ID 42")) and
+    expect(message.contains("Game not found: 42")) and
+      expect(gameId == guessCommand.gameId) and
       expect(command == guessCommand)
   }
 
 
   pureTest("guess wrong symbol") {
+    val effect = for
+      createUpdate <- commandHandler.handle(createCommand)
+      GameUpdate(_, game, _) :: Nil = createUpdate
+      differentSymbol               = game.playerCards.lookup(player1).get.get diff game.card
+      result <- commandHandler.guess(guessCommand.copy(symbol = differentSymbol.head))
+    yield result
+
+    val Right(events) = effect.runEmptyA
+
+    val SymbolsNotMatching(gameId, _, _) :: Nil = events
+
+    expect(gameId == guessCommand.gameId)
+  }
+
+
+  pureTest("guess symbol that does not exist on players card") {
     val effect = for
       createUpdate <- commandHandler.handle(createCommand)
       GameUpdate(_, game, _) :: Nil = createUpdate
@@ -132,9 +150,10 @@ object CommandHandlerTest extends SimpleIOSuite:
 
     val Right(events) = effect.runEmptyA
 
-    val ClientError(message, _) :: Nil = events
+    val NotFound(gameId, message, _) :: Nil = events
 
-    expect(message.contains("Failed to update game"))
+    expect(message.contains("not present on players card")) and
+      expect(gameId == guessCommand.gameId)
   }
 
 
@@ -151,9 +170,10 @@ object CommandHandlerTest extends SimpleIOSuite:
 
     val Right(events) = effect.runEmptyA
 
-    val ClientError(message, _) :: Nil = events
+    val GameHasAdvanced(gameId, version, newestVersion, _) :: Nil = events
 
-    expect(message.contains("Game has already advanced"))
+    expect(gameId == guessCommand.gameId) and
+      expect(newestVersion > version)
   }
 
 

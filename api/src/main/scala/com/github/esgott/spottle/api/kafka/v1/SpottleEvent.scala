@@ -15,17 +15,25 @@ import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 enum SpottleEvent:
   case GameUpdate(gameId: Long, game: PublicGame, command: SpottleCommand)
   case Winner(gameId: Long, winner: Player, game: PublicGame)
-  case ClientError(message: String, command: SpottleCommand)
+  case NotFound(gameId: Long, message: String, command: SpottleCommand)
+  case GameHasAdvanced(gameId: Long, version: Int, newestVersion: Int, command: SpottleCommand)
+  case GameAlreadyFinished(gameId: Long, command: SpottleCommand)
+  case NotPlayersTurn(gameId: Long, player: Player, command: SpottleCommand)
+  case SymbolsNotMatching(gameId: Long, symbol: Symbol, command: SpottleCommand)
   case InternalError(message: String, command: SpottleCommand)
 
 
 object SpottleEvent:
 
   given Encoder[SpottleEvent] = {
-    case event: GameUpdate    => event.asJson.deepMerge(typeDescriptor("GameUpdate"))
-    case event: Winner        => event.asJson.deepMerge(typeDescriptor("Winner"))
-    case event: ClientError   => event.asJson.deepMerge(typeDescriptor("ClientError"))
-    case event: InternalError => event.asJson.deepMerge(typeDescriptor("InternalError"))
+    case event: GameUpdate          => event.asJson.deepMerge(typeDescriptor("GameUpdate"))
+    case event: Winner              => event.asJson.deepMerge(typeDescriptor("Winner"))
+    case event: NotFound            => event.asJson.deepMerge(typeDescriptor("NotFound"))
+    case event: GameAlreadyFinished => event.asJson.deepMerge(typeDescriptor("GameAlreadyFinished"))
+    case event: NotPlayersTurn      => event.asJson.deepMerge(typeDescriptor("NotPlayersTurn"))
+    case event: SymbolsNotMatching  => event.asJson.deepMerge(typeDescriptor("SymbolsNotMatching"))
+    case event: GameHasAdvanced     => event.asJson.deepMerge(typeDescriptor("GameHasAdvanced"))
+    case event: InternalError       => event.asJson.deepMerge(typeDescriptor("InternalError"))
   }
 
 
@@ -33,11 +41,16 @@ object SpottleEvent:
     for
       name <- cursor.downField("type").as[String]
       result <- name match
-        case "GameUpdate"    => cursor.as[GameUpdate]
-        case "Winner"        => cursor.as[Winner]
-        case "ClientError"   => cursor.as[ClientError]
-        case "InternalError" => cursor.as[InternalError]
+        case "GameUpdate"          => cursor.as[GameUpdate]
+        case "Winner"              => cursor.as[Winner]
+        case "NotFound"            => cursor.as[NotFound]
+        case "GameHasAdvanced"     => cursor.as[GameHasAdvanced]
+        case "GameAlreadyFinished" => cursor.as[GameAlreadyFinished]
+        case "NotPlayersTurn"      => cursor.as[NotPlayersTurn]
+        case "SymbolsNotMatching"  => cursor.as[SymbolsNotMatching]
+        case "InternalError"       => cursor.as[InternalError]
         case other =>
-          DecodingFailure(s"Unknown command type '$other'", List(DownField("type"))).asLeft
+          val history = DownField("type") :: cursor.history
+          DecodingFailure(s"Unknown command type '$other'", history).asLeft
     yield result
   }

@@ -16,7 +16,7 @@ case class KafkaConsumerConfig(
 
   def consumerSettings(kafkaConfig: KafkaConfig): ConsumerSettings[IO, Array[Byte], Array[Byte]] =
     ConsumerSettings[IO, Array[Byte], Array[Byte]]
-      .withAutoOffsetReset(AutoOffsetReset.Earliest)
+      .withAutoOffsetReset(AutoOffsetReset.Earliest) // TODO from config
       .withIsolationLevel(IsolationLevel.ReadCommitted)
       .withBootstrapServers(kafkaConfig.bootstrapServer)
       .withGroupId(groupId)

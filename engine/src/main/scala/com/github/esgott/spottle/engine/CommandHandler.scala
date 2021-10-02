@@ -10,7 +10,7 @@ import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
 import com.github.esgott.spottle.api.kafka.v1.SpottleCommand._
 import com.github.esgott.spottle.api.kafka.v1.SpottleEvent._
 import com.github.esgott.spottle.core.{generateGame, GenerationError}
-import com.github.esgott.spottle.core.{FanoPlane, Game}
+import com.github.esgott.spottle.core.{FanoPlane, Game, GameError}
 import com.github.esgott.spottle.engine.CommandHandler.symbols
 import com.github.esgott.spottle.engine.GameStore.{GameEntry, GameMetadata}
 
@@ -62,7 +62,7 @@ class CommandHandler[F[_]](store: GameStore[F])(using MonadError[F, Throwable]):
       case Some(GameEntry(game, _)) =>
         List(GameUpdate(gameId, toPublicGame(game), command))
       case None =>
-        List(ClientError(s"Unknown game ID $gameId", command))
+        List(NotFound(gameId, s"Game not found: $gameId", command))
 
 
   def guess(command: Guess): F[List[SpottleEvent]] =
@@ -72,10 +72,11 @@ class CommandHandler[F[_]](store: GameStore[F])(using MonadError[F, Throwable]):
       events <- gameEntry match
         case Some(gameEntry) if gameEntry.game.version == command.gameVersion =>
           guessAndStore(command, gameEntry)
-        case Some(_) =>
-          List(ClientError(s"Game has already advanced", command)).pure[F]
+        case Some(gameEntry) =>
+          val newestVersion = gameEntry.game.version
+          List(GameHasAdvanced(command.gameId, command.gameVersion, newestVersion, command)).pure[F]
         case None =>
-          List(ClientError(s"Unknown game ID ${command.gameId}", command)).pure[F]
+          List(NotFound(command.gameId, s"Game not found: ${command.gameId}", command)).pure[F]
     yield events
 
 
@@ -91,8 +92,16 @@ class CommandHandler[F[_]](store: GameStore[F])(using MonadError[F, Throwable]):
             List(Winner(gameId, winner, toPublicGame(updated)))
           case None =>
             List(GameUpdate(gameId, toPublicGame(updated), command))
-      case Left(err) =>
-        List(ClientError(s"Failed to update game: $err", command)).pure[F]
+      case Left(GameError.UnknownPlayer) =>
+        List(NotFound(gameId, s"Unkonwn player: $player", command)).pure[F]
+      case Left(GameError.GameAlreadyFinished) =>
+        List(GameAlreadyFinished(gameId, command)).pure[F]
+      case Left(GameError.NotPlayersTurn) =>
+        List(NotPlayersTurn(gameId, player, command)).pure[F]
+      case Left(GameError.UnknownSymbolOnPlayersCard) =>
+        List(NotFound(gameId, s"Symbol '$symbol' not present on players card", command)).pure[F]
+      case Left(GameError.SymbolsNotMatching) =>
+        List(SymbolsNotMatching(gameId, symbol, command)).pure[F]
 
 
   def finsihGame(command: FinishGame): F[List[SpottleEvent]] =
