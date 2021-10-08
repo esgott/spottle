@@ -35,6 +35,7 @@ case class KafkaProducerConfig(
   def producerSettings(kafkaConfig: KafkaConfig): ProducerSettings[IO, Array[Byte], Array[Byte]] =
     ProducerSettings[IO, Array[Byte], Array[Byte]]
       .withBootstrapServers(kafkaConfig.bootstrapServer)
+      .withRetries(3)
 
 
   def transactionalStream[K: Encoder, V: Encoder](

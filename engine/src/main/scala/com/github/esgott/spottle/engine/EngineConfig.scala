@@ -17,15 +17,6 @@ case class EngineConfig(
 
 object EngineConfig:
 
-  val config: ConfigValue[IO, EngineConfig] =
-    (
-      env("SERVICE_PORT").as[Int].default(8080),
-      kafkaConfig,
-      commandsConfig,
-      eventsConfig
-    ).parMapN(EngineConfig.apply)
-
-
   private val kafkaConfig: ConfigValue[IO, KafkaConfig] =
     (
       env("KAFKA_BOOTSTRAP_SERVER"),
@@ -42,3 +33,12 @@ object EngineConfig:
 
   private val eventsConfig: ConfigValue[IO, KafkaProducerConfig] =
     env("EVENTS_TOPIC").map(KafkaProducerConfig.apply)
+
+
+  val config: ConfigValue[IO, EngineConfig] =
+    (
+      env("SERVICE_PORT").as[Int].default(8080),
+      kafkaConfig,
+      commandsConfig,
+      eventsConfig
+    ).parMapN(EngineConfig.apply)

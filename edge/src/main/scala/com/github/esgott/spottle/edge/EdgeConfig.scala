@@ -18,15 +18,6 @@ case class EdgeConfig(
 
 object EdgeConfig:
 
-  val config: ConfigValue[IO, EdgeConfig] =
-    (
-      env("SERVICE_PORT").as[Int].default(8080),
-      kafkaConfig,
-      commandsConfig,
-      eventssConfig
-    ).parMapN(EdgeConfig.apply)
-
-
   private val kafkaConfig: ConfigValue[IO, KafkaConfig] =
     (
       env("KAFKA_BOOTSTRAP_SERVER"),
@@ -43,3 +34,12 @@ object EdgeConfig:
       env("EVENTS_TOPIC"),
       env("KAFKA_CONSUMER_GROUP").default("spottle-edge")
     ).parMapN(KafkaConsumerConfig.apply)
+
+
+  val config: ConfigValue[IO, EdgeConfig] =
+    (
+      env("SERVICE_PORT").as[Int].default(8080),
+      kafkaConfig,
+      commandsConfig,
+      eventssConfig
+    ).parMapN(EdgeConfig.apply)
