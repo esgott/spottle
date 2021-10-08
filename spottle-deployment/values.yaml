@@ -1,0 +1,11 @@
+engine:
+  name: spottle-engine
+
+edge:
+  name: spottle-edge
+
+kafka:
+  bootstrapServer: kafka:9092
+  topic:
+    spottleCommands: spottle.commands.v1
+    spottleEvents: spottle.events.v1

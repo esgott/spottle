@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ $.Values.engine.name }}"
+  labels:
+    app: "{{ $.Values.engine.name }}"
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: "{{ $.Values.engine.name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ $.Values.engine.name }}"
+    spec:
+      containers:
+      - name: "{{ $.Values.engine.name }}"
+        image: "spottle-engine:{{ $.Values.engine.version }}"
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVER
+          value: "{{ $.Values.kafka.bootstrapServer }}"
+        - name: KAFKA_TRANSACTIONAL_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: COMMANDS_TOPIC
+          value: "{{ $.Values.kafka.topic.spottleCommands }}"
+        - name: EVENTS_TOPIC
+          value: "{{ $.Values.kafka.topic.spottleEvents }}"
+        ports:
+        - name: service-port
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: service-port
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: service-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ $.Values.engine.name }}"
+spec:
+  selector:
+    app: "{{ $.Values.engine.name }}"
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: service-port
