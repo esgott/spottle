@@ -13,3 +13,6 @@ kubectl --context kind-spottle create namespace spottle
 kubectl --context kind-spottle create namespace kafka
 
 kubectl --context kind-spottle --namespace kafka apply -f "${SCRIPT_DIR}/kafka-deployment.yaml"
+
+kafka-topics --bootstrap-server localhost:9092 --create --topic spottle.commands.v1
+kafka-topics --bootstrap-server localhost:9092 --create --topic spottle.events.v1
