@@ -22,6 +22,7 @@ object Dependencies {
   private val weaver     = scalaDep("com.disneystreaming", "weaver", "0.7.4")
 
   private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka" % "2.1.0"
+  private val ciris    = "is.cir"          %% "ciris"     % "2.1.1"
 
 
   private val breeze = ("org.scalanlp" %% "breeze" % "2.0-RC3")
@@ -61,11 +62,13 @@ object Dependencies {
     fs2Kafka
   )
 
+
   val service = Seq(
     catsEffect(""),
+    ciris, // circe-config is not yet publish for Scala 3 and Cats Effect 3
     http4s("core"),
     tapir("core"),
-    tapir("http4s-server"),
+    tapir("http4s-server")
   )
 
 }

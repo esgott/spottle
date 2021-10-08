@@ -1,7 +1,7 @@
 package com.github.esgott.spottle.edge
 
 
-import cats.effect.{ExitCode, IO, IOApp, Ref}
+import cats.effect.{ExitCode, IO, IOApp, Ref, Resource}
 import cats.effect.std.Queue
 import cats.syntax.all._
 import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
@@ -14,36 +14,22 @@ import scala.util.Random
 
 object Edge extends IOApp:
 
-  private val config = EdgeConfig(
-    port = 8080,
-    kafka = KafkaConfig(
-      bootstrapServer = "kafka:9092"
-    ),
-    commands = KafkaProducerConfig(
-      topicName = "spottle.commands.v1"
-    ),
-    events = KafkaConsumerConfig(
-      topicName = "spottle.events.v1",
-      groupId = "TODO"
-    )
-  )
-
-
   val resources =
     for
+      config              <- Resource.eval[IO, EdgeConfig](EdgeConfig.config.load)
       commandProducerPipe <- config.commands.stream[Long, SpottleCommand](config.kafka)
       eventConsumerStream <- config.events.stream[Long, SpottleEvent](config.kafka)
-    yield (commandProducerPipe, eventConsumerStream)
+    yield (config, commandProducerPipe, eventConsumerStream)
 
 
   override def run(args: List[String]): IO[ExitCode] =
-    resources.use { case (commandProducerPipe, eventConsumerStream) =>
+    resources.use { case (config, commandProducerPipe, eventConsumerStream) =>
       val streamWithoutCommiting = eventConsumerStream.map(r => r.key -> r.value)
 
       for
         ready <- Ref.of[IO, Boolean](false)
         kafka <- EdgeKafka.edgeKafka[IO](streamWithoutCommiting, commandProducerPipe)
-        server  = httpEndpoint(kafka, ready)
+        server  = httpEndpoint(kafka, ready, config)
         streams = List(kafka.stream, server.stream)
         _ <- ready.set(true)
         _ <- Stream.emits(streams).parJoin(streams.size).compile.drain
@@ -51,7 +37,7 @@ object Edge extends IOApp:
     }
 
 
-  private def httpEndpoint(kafka: EdgeKafka[IO], ready: Ref[IO, Boolean]) = {
+  private def httpEndpoint(kafka: EdgeKafka[IO], ready: Ref[IO, Boolean], config: EdgeConfig) = {
     given EdgeKafka[IO]       = kafka
     given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
     given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
