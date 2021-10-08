@@ -44,16 +44,12 @@ object Dependencies {
 
 
   val edge = Seq(
-    catsEffect(""),
     fs2("core"),
-    http4s("core"),
-    tapir("http4s-server"),
     weaver("cats") % Test
   )
 
 
   val engine = Seq(
-    catsEffect(""),
     fs2("core"),
     weaver("cats") % Test
   )
@@ -63,6 +59,13 @@ object Dependencies {
     circe("fs2"),
     circe("generic"),
     fs2Kafka
+  )
+
+  val service = Seq(
+    catsEffect(""),
+    http4s("core"),
+    tapir("core"),
+    tapir("http4s-server"),
   )
 
 }

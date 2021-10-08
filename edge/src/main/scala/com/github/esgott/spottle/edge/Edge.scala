@@ -1,16 +1,14 @@
 package com.github.esgott.spottle.edge
 
 
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Ref}
 import cats.effect.std.Queue
 import cats.syntax.all._
-import com.github.esgott.spottle.kafka.{KafkaConfig, KafkaConsumerConfig, KafkaProducerConfig}
 import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
-import org.http4s.blaze.server._
-import org.http4s.server.Router
+import com.github.esgott.spottle.kafka.{KafkaConfig, KafkaConsumerConfig, KafkaProducerConfig}
+import com.github.esgott.spottle.service.Endpoints
 import fs2.Stream
 
-import scala.concurrent.ExecutionContext
 import scala.util.Random
 
 
@@ -43,21 +41,20 @@ object Edge extends IOApp:
       val streamWithoutCommiting = eventConsumerStream.map(r => r.key -> r.value)
 
       for
+        ready <- Ref.of[IO, Boolean](false)
         kafka <- EdgeKafka.edgeKafka[IO](streamWithoutCommiting, commandProducerPipe)
-        server  = httpEndpoint(kafka)
+        server  = httpEndpoint(kafka, ready)
         streams = List(kafka.stream, server.stream)
+        _ <- ready.set(true)
         _ <- Stream.emits(streams).parJoin(streams.size).compile.drain
       yield ExitCode.Success
     }
 
 
-  private def httpEndpoint(kafka: EdgeKafka[IO]) = {
+  private def httpEndpoint(kafka: EdgeKafka[IO], ready: Ref[IO, Boolean]) = {
     given EdgeKafka[IO]       = kafka
     given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
     given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
-    val endpoints             = EdgeEndpoints.edgeEndpoints[IO]
-
-    BlazeServerBuilder[IO](ExecutionContext.global)
-      .bindHttp(config.port)
-      .withHttpApp(Router("/" -> endpoints.routes).orNotFound)
+    val endpoints             = EdgeEndpoints.edgeEndpoints[IO](ready)
+    Endpoints.server[IO](config.port, endpoints.routes)
   }

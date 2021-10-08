@@ -6,6 +6,7 @@ import io.circe.Codec
 
 
 case class EngineConfig(
+    port: Int,
     kafka: KafkaConfig,
     commands: KafkaConsumerConfig,
     events: KafkaProducerConfig

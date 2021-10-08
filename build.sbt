@@ -12,7 +12,8 @@ lazy val spottle = (project in file("."))
     `spottle-core`,
     `spottle-edge`,
     `spottle-engine`,
-    `spottle-kafka`
+    `spottle-kafka`,
+    `spottle-service`
   )
 
 
@@ -33,7 +34,8 @@ lazy val `spottle-edge` = (project in file("edge"))
   .enablePlugins(DockerPlugin, JavaAppPackaging)
   .dependsOn(
     `spottle-core`,
-    `spottle-kafka`
+    `spottle-kafka`,
+    `spottle-service`
   )
   .settings(
     libraryDependencies ++= Dependencies.edge,
@@ -45,7 +47,8 @@ lazy val `spottle-engine` = (project in file("engine"))
   .enablePlugins(DockerPlugin, JavaAppPackaging)
   .dependsOn(
     `spottle-core`,
-    `spottle-kafka`
+    `spottle-kafka`,
+    `spottle-service`
   )
   .settings(
     libraryDependencies ++= Dependencies.engine,
@@ -56,4 +59,10 @@ lazy val `spottle-engine` = (project in file("engine"))
 lazy val `spottle-kafka` = (project in file("kafka"))
   .settings(
     libraryDependencies ++= Dependencies.kafka
+  )
+
+
+lazy val `spottle-service` = (project in file("service"))
+  .settings(
+    libraryDependencies ++= Dependencies.service
   )
