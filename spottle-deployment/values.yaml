@@ -5,7 +5,7 @@ edge:
   name: spottle-edge
 
 kafka:
-  bootstrapServer: kafka:9092
+  bootstrapServer: kafka.kafka.svc.cluster.local:9092
   topic:
     spottleCommands: spottle.commands.v1
     spottleEvents: spottle.events.v1
