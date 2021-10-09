@@ -14,48 +14,43 @@ import sttp.tapir.generic.auto._
 
 type Card = Set[Symbol]
 
-opaque type Symbol = String
+case class Symbol(value: String) extends AnyVal
 
 
 object Symbol:
-  def apply(s: String): Symbol = s
 
+  given Encoder[Symbol] = Encoder[String].contramap(_.value)
 
-  given CirceCodec[Symbol] =
-    CirceCodec.from(Decoder[String], Encoder[String]).imap(Symbol.apply)(identity)
+  given Decoder[Symbol] = Decoder[String].map(Symbol.apply)
 
 
   given TapirCodec[String, Symbol, TextPlain] =
-    TapirCodec.string.map(Symbol.apply)(identity)
+    TapirCodec.string.map(Symbol.apply)(_.value)
 
 
   given Schema[Symbol] = Schema.string[Symbol]
 
 
-opaque type Player = String
+case class Player(value: String) extends AnyVal
 
 
 object Player:
 
-  def apply(s: String): Player = s
-
-
   given Order[Player] = Order.from[Player] { (a, b) =>
-    if (a eq b) 0 else a.compareTo(b)
+    if (a == b) 0 else a.value.compareTo(b.value)
   }
 
 
-  given KeyEncoder[Player] = { player => player }
+  given KeyEncoder[Player] = _.value
 
-  given KeyDecoder[Player] = _.some
+  given KeyDecoder[Player] = { player => Player(player).some }
 
+  given Encoder[Player] = Encoder[String].contramap(_.value)
 
-  given CirceCodec[Player] =
-    CirceCodec.from(Decoder[String], Encoder[String]).imap(Player.apply)(identity)
-
+  given Decoder[Player] = Decoder[String].map(Player.apply)
 
   given Schema[Player] = Schema.string[Player]
 
 
   given TapirCodec[String, Player, TextPlain] =
-    TapirCodec.string.map(Player.apply)(identity)
+    TapirCodec.string.map(Player.apply)(_.value)
