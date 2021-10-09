@@ -4,7 +4,6 @@ package com.github.esgott.spottle.edge
 import cats.data.EitherT
 import cats.effect.{Async, Ref}
 import cats.syntax.all._
-import com.github.esgott.spottle.service.Endpoints
 import com.github.esgott.spottle.api.http.v1.{Http, SpottleError}
 import com.github.esgott.spottle.api.http.v1.Http.AuthenticatedSpottleEndpoint
 import com.github.esgott.spottle.api.Player
@@ -29,9 +28,7 @@ object EdgeEndpoints:
         authenticatedEndpoint(Http.createGame, http.createGame) <+>
           authenticatedEndpoint(Http.getGame, http.getGame) <+>
           authenticatedEndpoint(Http.pollGame, http.pollGame) <+>
-          authenticatedEndpoint(Http.guess, http.guess) <+>
-          Endpoints.healthRoute[F] <+>
-          Endpoints.readyRoute[F](ready)
+          authenticatedEndpoint(Http.guess, http.guess)
 
 
       private def authenticatedEndpoint[In, Out](

@@ -51,7 +51,7 @@ class CommandHandler[F[_]](store: GameStore[F])(using MonadError[F, Throwable]):
     PublicGame(
       version = game.version,
       card = game.cards.head,
-      playerCards = game.playerCards.map(_.headOption)
+      playerCards = game.playerCards.map(_.headOption).toSortedMap
     )
 
 

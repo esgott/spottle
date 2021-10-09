@@ -27,16 +27,23 @@ spec:
               value: "{{ $.Values.kafka.topic.spottleCommands }}"
             - name: EVENTS_TOPIC
               value: "{{ $.Values.kafka.topic.spottleEvents }}"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
           ports:
             - name: service-port
               containerPort: 8080
           livenessProbe:
             httpGet:
-              path: /health
+              path: /diag/health
               port: service-port
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /diag/ready
               port: service-port
 ---
 apiVersion: v1

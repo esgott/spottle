@@ -1,40 +1,49 @@
 package com.github.esgott.spottle.service
 
 
-import cats.effect.{Async, Ref}
-import cats.syntax.all._
+import cats.effect.{IO, Ref}
 import org.http4s.HttpRoutes
-import org.http4s.blaze.server._
+import org.http4s.dsl.io._
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.Router
-import sttp.model.StatusCode
-import sttp.tapir._
-import sttp.tapir.server.http4s.Http4sServerInterpreter
+import org.http4s.server.middleware.{Logger => LoggerMiddleware}
+import org.typelevel.log4cats.Logger
 
 import scala.concurrent.ExecutionContext
 
 
 object Endpoints:
 
-  val health: Endpoint[Unit, Unit, Unit, Any] =
-    endpoint.get.in("health")
+  private def diagRoutes(ready: Ref[IO, Boolean]) = HttpRoutes.of[IO] {
+    case GET -> Root / "health" =>
+      Ok()
+    case GET -> Root / "ready" =>
+      for
+        r      <- ready.get
+        result <- if (r) Ok() else NotFound()
+      yield result
+  }
 
 
-  val ready: Endpoint[Unit, Unit, Unit, Any] =
-    endpoint.get.in("ready").errorOut(statusCode(StatusCode.NotFound))
+  def server(
+      port: Int,
+      routes: HttpRoutes[IO],
+      ready: Ref[IO, Boolean],
+      logger: Logger[IO]
+  ): BlazeServerBuilder[IO] = {
+    val loggedRoutes = LoggerMiddleware.httpRoutes[IO](
+      logHeaders = true,
+      logBody = true,
+      logAction = Some(msg => logger.debug(msg))
+    )(routes)
+
+    BlazeServerBuilder[IO](ExecutionContext.global)
+      .bindHttp(port, "0.0.0.0")
+      .withHttpApp(Router("/" -> loggedRoutes, "diag" -> diagRoutes(ready)).orNotFound)
+  }
 
 
-  def healthRoute[F[_]: Async]: HttpRoutes[F] =
-    Http4sServerInterpreter[F]().toRoutes(health)(_ => ().asRight.pure)
-
-
-  def readyRoute[F[_]: Async](readyRef: Ref[F, Boolean]): HttpRoutes[F] =
-    Http4sServerInterpreter[F]().toRoutes(ready) { _ =>
-      for r <- readyRef.get
-      yield Either.cond(r, (), ())
-    }
-
-
-  def server[F[_]: Async](port: Int, routes: HttpRoutes[F]): BlazeServerBuilder[F] =
-    BlazeServerBuilder[F](ExecutionContext.global)
-      .bindHttp(port)
-      .withHttpApp(Router("/" -> routes).orNotFound)
+  def diagServer(port: Int, ready: Ref[IO, Boolean]): BlazeServerBuilder[IO] =
+    BlazeServerBuilder[IO](ExecutionContext.global)
+      .bindHttp(port, "0.0.0.0")
+      .withHttpApp(Router("diag" -> diagRoutes(ready)).orNotFound)

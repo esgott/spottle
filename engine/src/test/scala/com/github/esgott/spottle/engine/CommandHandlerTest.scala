@@ -100,7 +100,7 @@ object CommandHandlerTest extends SimpleIOSuite:
     val effect = for
       createUpdate <- commandHandler.handle(createCommand)
       GameUpdate(_, PublicGame(_, card, playerCards), _) :: Nil = createUpdate
-      commonSymbol = card intersect playerCards.lookup(player1).get.get
+      commonSymbol = card intersect playerCards.get(player1).get.get
       result <- commandHandler.guess(guessCommand.copy(symbol = commonSymbol.head))
     yield result
 
@@ -128,7 +128,7 @@ object CommandHandlerTest extends SimpleIOSuite:
     val effect = for
       createUpdate <- commandHandler.handle(createCommand)
       GameUpdate(_, game, _) :: Nil = createUpdate
-      differentSymbol               = game.playerCards.lookup(player1).get.get diff game.card
+      differentSymbol               = game.playerCards.get(player1).get.get diff game.card
       result <- commandHandler.guess(guessCommand.copy(symbol = differentSymbol.head))
     yield result
 
@@ -144,7 +144,7 @@ object CommandHandlerTest extends SimpleIOSuite:
     val effect = for
       createUpdate <- commandHandler.handle(createCommand)
       GameUpdate(_, game, _) :: Nil = createUpdate
-      differentSymbol               = game.card diff game.playerCards.lookup(player1).get.get
+      differentSymbol               = game.card diff game.playerCards.get(player1).get.get
       result <- commandHandler.guess(guessCommand.copy(symbol = differentSymbol.head))
     yield result
 
@@ -161,10 +161,10 @@ object CommandHandlerTest extends SimpleIOSuite:
     val effect = for
       createUpdate <- commandHandler.handle(createCommand)
       GameUpdate(_, PublicGame(_, card, playerCards), _) :: Nil = createUpdate
-      commonSymbol = (card intersect playerCards.lookup(player1).get.get).head
+      commonSymbol = (card intersect playerCards.get(player1).get.get).head
       guessUpdate <- commandHandler.guess(guessCommand.copy(symbol = commonSymbol))
       GameUpdate(_, PublicGame(_, card2, playerCards2), _) :: Nil = guessUpdate
-      commonSymbol2 = (card2 intersect playerCards2.lookup(player2).get.get).head
+      commonSymbol2 = (card2 intersect playerCards2.get(player2).get.get).head
       result <- commandHandler.guess(guessCommand.copy(gameVersion = 0, symbol = commonSymbol2))
     yield result
 
@@ -180,7 +180,7 @@ object CommandHandlerTest extends SimpleIOSuite:
   pureTest("winner announced") {
     def guess(event: SpottleEvent, player: Player) =
       val GameUpdate(_, PublicGame(version, card, playerCards), _) = event
-      val commonSymbol = card intersect playerCards.lookup(player).get.get
+      val commonSymbol = card intersect playerCards.get(player).get.get
       guessCommand.copy(gameVersion = version, player = player, symbol = commonSymbol.head)
 
     val effect = for {
@@ -199,7 +199,7 @@ object CommandHandlerTest extends SimpleIOSuite:
     expect(gameId == 42) and
       expect(winner == player1) and
       expect(version == 5) and
-      expect(playerCards.lookup(player1).get == None)
+      expect(playerCards.get(player1).get == None)
   }
 
 

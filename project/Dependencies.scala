@@ -18,11 +18,13 @@ object Dependencies {
   private val circe      = scalaDep("io.circe", "circe", "0.14.0")
   private val fs2        = scalaDep("co.fs2", "fs2", "3.1.1")
   private val http4s     = scalaDep("org.http4s", "http4s", "0.23.3")
+  private val log4cats   = scalaDep("org.typelevel", "log4cats", "2.1.1")
   private val tapir      = scalaDep("com.softwaremill.sttp.tapir", "tapir", "0.19.0-M8")
   private val weaver     = scalaDep("com.disneystreaming", "weaver", "0.7.4")
 
-  private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka" % "2.1.0"
-  private val ciris    = "is.cir"          %% "ciris"     % "2.1.1"
+  private val fs2Kafka = "com.github.fd4s" %% "fs2-kafka"       % "2.1.0"
+  private val ciris    = "is.cir"          %% "ciris"           % "2.1.1"
+  private val logback  = "ch.qos.logback"   % "logback-classic" % "1.2.6"
 
 
   private val breeze = ("org.scalanlp" %% "breeze" % "2.0-RC3")
@@ -67,7 +69,9 @@ object Dependencies {
     catsEffect(""),
     ciris, // circe-config is not yet publish for Scala 3 and Cats Effect 3
     http4s("core"),
-    tapir("core"),
+    http4s("dsl"),
+    log4cats("slf4j"),
+    logback,
     tapir("http4s-server")
   )
 

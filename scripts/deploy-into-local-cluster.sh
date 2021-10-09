@@ -31,8 +31,8 @@ if [ -z ${VERSION+x} ]; then
   usage
 fi
 
-kubectl --context kind-spottle --namespace spottle scale deployment spottle-engine --replicas 0
-kubectl --context kind-spottle --namespace spottle scale deployment spottle-edge --replicas 0
+kubectl --context kind-spottle --namespace spottle scale deployment spottle-engine --replicas 0 || true
+kubectl --context kind-spottle --namespace spottle scale deployment spottle-edge --replicas 0 || true
 
 kind load docker-image "spottle-engine:${VERSION}" --name spottle
 kind load docker-image "spottle-edge:${VERSION}" --name spottle

@@ -2,9 +2,9 @@ package com.github.esgott.spottle.api
 
 
 import cats.Order
-import cats.syntax.option._
-import io.circe.{Decoder, Encoder, Json, KeyDecoder, KeyEncoder}
-import sttp.tapir.{Codec, Schema}
+import cats.syntax.all._
+import io.circe.{Codec => CirceCodec, Decoder, Encoder, Json, KeyDecoder, KeyEncoder}
+import sttp.tapir.{Codec => TapirCodec, Schema}
 import sttp.tapir.CodecFormat.TextPlain
 import sttp.tapir.SchemaType.SString
 import sttp.tapir.generic.auto._
@@ -20,14 +20,16 @@ opaque type Symbol = String
 object Symbol:
   def apply(s: String): Symbol = s
 
-  given Encoder[Symbol] = Json.fromString(_)
 
-  given Decoder[Symbol] = _.as[String].map(Symbol.apply)
+  given CirceCodec[Symbol] =
+    CirceCodec.from(Decoder[String], Encoder[String]).imap(Symbol.apply)(identity)
 
-  given Schema[Symbol] = Schema(SString())
 
-  given Codec[String, Symbol, TextPlain] =
-    Codec.string.map(Symbol.apply)(identity).schema(summon[Schema[Player]])
+  given TapirCodec[String, Symbol, TextPlain] =
+    TapirCodec.string.map(Symbol.apply)(identity)
+
+
+  given Schema[Symbol] = Schema.string[Symbol]
 
 
 opaque type Player = String
@@ -47,12 +49,13 @@ object Player:
 
   given KeyDecoder[Player] = _.some
 
-  given Encoder[Player] = Json.fromString(_)
 
-  given Decoder[Player] = _.as[String].map(Player.apply)
-
-  given Schema[Player] = Schema(SString())
+  given CirceCodec[Player] =
+    CirceCodec.from(Decoder[String], Encoder[String]).imap(Player.apply)(identity)
 
 
-  given Codec[String, Player, TextPlain] =
-    Codec.string.map(Player.apply)(identity).schema(summon[Schema[Player]])
+  given Schema[Player] = Schema.string[Player]
+
+
+  given TapirCodec[String, Player, TextPlain] =
+    TapirCodec.string.map(Player.apply)(identity)

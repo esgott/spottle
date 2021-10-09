@@ -53,7 +53,7 @@ object EdgeHttpTest extends SimpleIOSuite:
       given EdgeKafka[IO] = kafka
 
       order       = 2
-      publicGame  = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
+      publicGame  = PublicGame(gameId, card, Map(otherPlayer -> None))
       players     = NonEmptyList.of(player, otherPlayer)
       kafkaCreate = SpottleCommand.CreateGame(gameId, order, player, players)
 
@@ -108,7 +108,7 @@ object EdgeHttpTest extends SimpleIOSuite:
       given EdgeKafka[IO] = kafka
 
       getGame    = SpottleCommand.GetGame(gameId, player)
-      publicGame = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
+      publicGame = PublicGame(gameId, card, Map(otherPlayer -> None))
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(gameId, publicGame, getGame))
 
@@ -127,7 +127,7 @@ object EdgeHttpTest extends SimpleIOSuite:
       given EdgeKafka[IO] = kafka
 
       getGame    = SpottleCommand.GetGame(gameId, player)
-      publicGame = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
+      publicGame = PublicGame(gameId, card, Map(otherPlayer -> None))
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(gameId, publicGame, getGame))
 
@@ -145,7 +145,7 @@ object EdgeHttpTest extends SimpleIOSuite:
       kafka <- InMemoryKafka()
       given EdgeKafka[IO] = kafka
 
-      publicGame = PublicGame(gameId, card, NonEmptyMap.of(otherPlayer -> None))
+      publicGame = PublicGame(gameId, card, Map(otherPlayer -> None))
       _ <- kafka.addResponse(SpottleEvent.Winner(gameId, player, publicGame))
 
       http = EdgeHttp.edgeHttp[IO]
