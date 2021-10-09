@@ -10,6 +10,7 @@
 
     <logger name="org.apache.kafka" level="WARN"/>
     <logger name="org.http4s" level="INFO"/>
+    <logger name="org.http4s.blaze.channel.nio1.NIO1SocketServerGroup" level="WARN"/>
     <logger name="sttp.tapir" level="INFO"/>
 
     <root level="debug">

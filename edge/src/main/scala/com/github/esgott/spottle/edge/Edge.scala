@@ -31,8 +31,9 @@ object Edge extends IOApp:
       for
         ready  <- Ref.of[IO, Boolean](false)
         logger <- Slf4jLogger.create[IO]
+        _      <- logger.info(s"Started with config $config")
         kafka  <- EdgeKafka.edgeKafka[IO](streamWithoutCommiting, commandProducerPipe)
-        server  = httpEndpoint(kafka, ready, config)
+        server <- httpEndpoint(kafka, ready, config)
         streams = List(kafka.stream, server.serve)
         _ <- ready.set(true)
         _ <- logger.info("Service started")
@@ -44,8 +45,14 @@ object Edge extends IOApp:
   private def httpEndpoint(kafka: EdgeKafka[IO], ready: Ref[IO, Boolean], config: EdgeConfig) = {
     given EdgeKafka[IO]       = kafka
     given GameIdGenerator[IO] = GameIdGenerator.gameIdGenerator[IO](Random().nextLong)
-    given EdgeHttp[IO]        = EdgeHttp.edgeHttp[IO]
-    val endpoints             = EdgeEndpoints.edgeEndpoints[IO](ready)
-    val logger                = Slf4jLogger.getLoggerFromName[IO]("com.github.esgott.edge.http")
+    for edgeHttp <- EdgeHttp.edgeHttp[IO]
+    yield server(edgeHttp, ready, config)
+  }
+
+
+  private def server(edgeHttp: EdgeHttp[IO], ready: Ref[IO, Boolean], config: EdgeConfig) = {
+    given EdgeHttp[IO] = edgeHttp
+    val endpoints      = EdgeEndpoints.edgeEndpoints[IO](ready)
+    val logger         = Slf4jLogger.getLoggerFromName[IO]("com.github.esgott.edge.http")
     Endpoints.server(config.port, endpoints.routes, ready, logger)
   }

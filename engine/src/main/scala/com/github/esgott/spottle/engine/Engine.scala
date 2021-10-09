@@ -21,13 +21,14 @@ object Engine extends IOApp:
       eventProducerStream   <- config.events.transactionalStream[Long, SpottleEvent](config.kafka)
 
       _ <- Endpoints.diagServer(config.port, ready).resource
-    yield (ready, commandConsumerStream, eventProducerStream)
+    yield (ready, config, commandConsumerStream, eventProducerStream)
 
 
   override def run(args: List[String]): IO[ExitCode] =
-    resources.use { case (ready, commandConsumerStream, eventProducerStream) =>
+    resources.use { case (ready, config, commandConsumerStream, eventProducerStream) =>
       for
         logger    <- Slf4jLogger.create[IO]
+        _         <- logger.info(s"Started with condif ${config}")
         gameStore <- GameStore()
         commandHandler = new CommandHandler[IO](gameStore)
         _ <- ready.set(true)
@@ -36,7 +37,9 @@ object Engine extends IOApp:
         _ <- commandConsumerStream
           .evalMap { case KafkaConsumerRecord(key, command, offset) =>
             for
+              _      <- logger.debug(s"Received $command")
               events <- commandHandler.handle(command)
+              _      <- logger.debug(s"Sending $events")
               records = events.map(key -> _)
             yield KafkaProducerRecord(records, offset)
           }

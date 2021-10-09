@@ -1,13 +1,14 @@
 package com.github.esgott.spottle.edge
 
 
-import cats.effect.Concurrent
+import cats.effect.Async
 import cats.effect.std.Queue
 import cats.effect.kernel.{Deferred, Fiber, Ref}
 import cats.syntax.all._
 import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
 import com.github.esgott.spottle.api.kafka.v1.SpottleEvent.GameUpdate
 import fs2.{Pipe, Stream}
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 
 trait EdgeKafka[F[_]]:
@@ -24,17 +25,21 @@ object EdgeKafka:
   )
 
 
-  def edgeKafka[F[_]: Concurrent](
+  def edgeKafka[F[_]: Async](
       eventStream: Stream[F, (Long, SpottleEvent)],
       commmandProducerPipe: Pipe[F, (Long, SpottleCommand), List[(Long, SpottleCommand)]]
   ): F[EdgeKafka[F]] =
     for
+      logger       <- Slf4jLogger.create[F]
       waiting      <- Ref.of[F, List[Waiting[F]]](List.empty)
       commandQueue <- Queue.unbounded[F, (Long, SpottleCommand)]
     yield new EdgeKafka[F]:
 
       override def send(command: SpottleCommand): F[SpottleEvent] =
         for
+          _ <- commandQueue.offer(gameId(command) -> command)
+          _ <- logger.debug(s"Sent $command")
+
           deferred <- Deferred[F, SpottleEvent]
 
           waitForEvent = Waiting(
@@ -45,6 +50,14 @@ object EdgeKafka:
           _      <- waiting.update(waitForEvent :: _)
           result <- deferred.get
         yield result
+
+
+      private def gameId(command: SpottleCommand) = command match {
+        case SpottleCommand.CreateGame(gameId, _, _, _) => gameId
+        case SpottleCommand.GetGame(gameId, _)          => gameId
+        case SpottleCommand.Guess(gameId, _, _, _)      => gameId
+        case SpottleCommand.FinishGame(gameId, _)       => gameId
+      }
 
 
       override def nextEvent(gameId: Long): F[SpottleEvent] =
@@ -63,6 +76,7 @@ object EdgeKafka:
 
       override def stream: Stream[F, List[(Long, SpottleCommand)]] =
         val eventProcessing = eventStream
+          .evalTap(event => logger.debug(s"Received $event"))
           .evalMap(finishWaiting)
 
         val commandProcessing = Stream

@@ -59,7 +59,7 @@ object EdgeHttpTest extends SimpleIOSuite:
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(0, publicGame, kafkaCreate))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       request = CreateGame(order, NonEmptyList.of(otherPlayer))
       response <- http.createGame(request, player).value
@@ -78,7 +78,7 @@ object EdgeHttpTest extends SimpleIOSuite:
 
       _ <- kafka.addResponse(SpottleEvent.NotFound(gameId, "Something not found", getGame))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       response <- http.getGame(gameId, player).value
     yield expect(response == SpottleError.NotFound("Something not found").asLeft)
@@ -94,7 +94,7 @@ object EdgeHttpTest extends SimpleIOSuite:
 
       _ <- kafka.addResponse(SpottleEvent.InternalError("something went wrong", getGame))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       response <- http.getGame(gameId, player).value.attempt
       Left(error) = response
@@ -112,7 +112,7 @@ object EdgeHttpTest extends SimpleIOSuite:
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(gameId, publicGame, getGame))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       response <- http.getGame(gameId, player).value
       sent     <- kafka.sent
@@ -131,7 +131,7 @@ object EdgeHttpTest extends SimpleIOSuite:
 
       _ <- kafka.addResponse(SpottleEvent.GameUpdate(gameId, publicGame, getGame))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       response <- http.pollGame(gameId, player).value
       sent     <- kafka.sent
@@ -148,7 +148,7 @@ object EdgeHttpTest extends SimpleIOSuite:
       publicGame = PublicGame(gameId, card, Map(otherPlayer -> None))
       _ <- kafka.addResponse(SpottleEvent.Winner(gameId, player, publicGame))
 
-      http = EdgeHttp.edgeHttp[IO]
+      http <- EdgeHttp.edgeHttp[IO]
 
       request = Guess(gameId, 0, symbol)
       response <- http.guess(request, player).value

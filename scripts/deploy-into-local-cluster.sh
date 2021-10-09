@@ -44,3 +44,17 @@ helm upgrade spottle  "${CHART_DIR}" \
     --namespace spottle \
     --values "${CHART_DIR}/values.yaml" \
     --set "engine.version=${VERSION},edge.version=${VERSION}"
+
+kubectl wait \
+    --timeout=60s \
+    --namespace spottle \
+    --selector=app=spottle-engine \
+    --for=condition=ready \
+    pod
+
+kubectl wait \
+    --timeout=60s \
+    --namespace spottle \
+    --selector=app=spottle-edge \
+    --for=condition=ready \
+    pod

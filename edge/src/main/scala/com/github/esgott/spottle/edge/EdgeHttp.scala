@@ -3,10 +3,12 @@ package com.github.esgott.spottle.edge
 
 import cats.MonadError
 import cats.data.EitherT
+import cats.effect.Sync
 import cats.syntax.all._
 import com.github.esgott.spottle.api.Player
 import com.github.esgott.spottle.api.http.v1._
 import com.github.esgott.spottle.api.kafka.v1.{SpottleCommand, SpottleEvent}
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 
 trait EdgeHttp[F[_]]:
@@ -21,16 +23,18 @@ object EdgeHttp:
   type Result[F[_], T] = EitherT[F, SpottleError, T]
 
 
-  def edgeHttp[F[_]](using
+  def edgeHttp[F[_]: Sync](using
       EdgeKafka[F],
       GameIdGenerator[F],
       MonadError[F, Throwable]
-  ): EdgeHttp[F] =
-    new EdgeHttp[F]:
+  ): F[EdgeHttp[F]] =
+    for logger <- Slf4jLogger.create[F]
+    yield new EdgeHttp[F]:
 
       override def createGame(request: CreateGame, player: Player): Result[F, GameUpdate] =
         for
           gameId <- EitherT.liftF(summon[GameIdGenerator[F]].nextGameid)
+          _      <- EitherT.liftF(logger.info(s"Creating game with id $gameId"))
           allPlayers = player :: request.otherPlayers
           command    = SpottleCommand.CreateGame(gameId, request.order, player, allPlayers)
           event  <- EitherT.liftF(sendCommand(command))
